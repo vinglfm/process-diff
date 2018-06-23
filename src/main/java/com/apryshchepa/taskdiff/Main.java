@@ -1,23 +1,24 @@
 package com.apryshchepa.taskdiff;
 
+import com.apryshchepa.taskdiff.config.AppContextConfig;
+import com.apryshchepa.taskdiff.fxml.SpringFXMLLoader;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan("com.apryshchepa.taskdiff")
+import java.io.IOException;
+
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Main.class);
+    public void start(Stage primaryStage) throws IOException {
+        ApplicationContext context = new AnnotationConfigApplicationContext(AppContextConfig.class);
+        Parent root = new SpringFXMLLoader<Parent>(context).load(getClass().getClassLoader().getResource("application.fxml"));
 
-        String label = context.getBean("label", String.class);
-        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("main.fxml"));
-        primaryStage.setTitle(label);
+        primaryStage.setTitle("ProDiff");
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.show();
     }
