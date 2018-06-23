@@ -52,6 +52,10 @@ public class TaskLoaderController {
         sessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
         memUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
 
+        reload();
+    }
+
+    public void reload() {
         List<Task> tasks = load();
         itemList = FXCollections.observableArrayList(tasks);
         liveView.setItems(itemList);
