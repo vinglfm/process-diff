@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TaskLoaderController {
+    private static final String EXEC = "tasklist.exe /fo csv /nh";
 
     @FXML
     private TableView<Task> liveView;
@@ -31,8 +32,18 @@ public class TaskLoaderController {
     private TableColumn<Task, String> sessionIdColumn;
     @FXML
     private TableColumn<Task, String> memUsageColumn;
-
-    private ObservableList<Task> itemList;
+    @FXML
+    private TableView<Task> snapshotView;
+    @FXML
+    private TableColumn<Task, String> snapImageNameColumn;
+    @FXML
+    private TableColumn<Task, String> snapPidColumn;
+    @FXML
+    private TableColumn<Task, String> snapSessionNameColumn;
+    @FXML
+    private TableColumn<Task, String> snapSessionIdColumn;
+    @FXML
+    private TableColumn<Task, String> snapMemUsageColumn;
 
     private TaskParser taskParser;
 
@@ -46,24 +57,39 @@ public class TaskLoaderController {
 
     @FXML
     public void initialize() {
+        initLiveTableColumns();
+        initSnapshotTableColumns();
+        reload(liveView);
+    }
+
+    private void initSnapshotTableColumns() {
+        snapImageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
+        snapPidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
+        snapSessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
+        snapSessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
+        snapMemUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
+    }
+
+    private void initLiveTableColumns() {
         imageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
         pidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
         sessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
         sessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
         memUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
-
-        reload();
     }
 
-    public void reload() {
+    public void snapshot() {
+        reload(snapshotView);
+    }
+
+    private void reload(TableView<Task> view) {
         List<Task> tasks = load();
-        itemList = FXCollections.observableArrayList(tasks);
-        liveView.setItems(itemList);
+        view.setItems(FXCollections.observableArrayList(tasks));
     }
 
     private List<Task> load() {
         List<Task> tasks = new ArrayList<>();
-        try (InputStream inputStream = Runtime.getRuntime().exec("tasklist.exe /fo csv /nh").getInputStream();
+        try (InputStream inputStream = Runtime.getRuntime().exec(EXEC).getInputStream();
              BufferedReader input = new BufferedReader(new InputStreamReader(inputStream))) {
             String task;
             while ((task = input.readLine()) != null) {
