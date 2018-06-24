@@ -70,8 +70,8 @@ public class TaskLoaderController {
         initLiveTableColumns();
         initSnapshotTableColumns();
         scheduleService.start(() -> {
-            liveList = reload(liveView);
-            Platform.runLater(() -> taskStatuses = differenceService.compare(liveList, snapshotList));
+            this.liveList = reload(this.liveView);
+            Platform.runLater(() -> this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList));
         }, PERIOD);
 
         liveView.setRowFactory(tableView -> {
@@ -85,34 +85,38 @@ public class TaskLoaderController {
             }, row.itemProperty());
             row.styleProperty().bind(Bindings.when(contains.isEqualTo(Status.CHANGED))
                     .then("-fx-background-color: grey;")
-                    .otherwise(""));
+                    .otherwise(Bindings.when(contains.isEqualTo(Status.DELETED))
+                            .then("-fx-background-color: red;")
+                            .otherwise(Bindings.when(contains.isEqualTo(Status.NEW))
+                                    .then("-fx-background-color: green;")
+                                    .otherwise(""))));
             return row;
         });
     }
 
     private void initSnapshotTableColumns() {
-        snapImageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
-        snapPidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
-        snapSessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
-        snapSessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
-        snapMemUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
+        this.snapImageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
+        this.snapPidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
+        this.snapSessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
+        this.snapSessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
+        this.snapMemUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
     }
 
     private void initLiveTableColumns() {
-        imageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
-        pidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
-        sessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
-        sessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
-        memUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
+        this.imageNameColumn.setCellValueFactory(new PropertyValueFactory<>("imageName"));
+        this.pidColumn.setCellValueFactory(new PropertyValueFactory<>("pid"));
+        this.sessionNameColumn.setCellValueFactory(new PropertyValueFactory<>("sessionName"));
+        this.sessionIdColumn.setCellValueFactory(new PropertyValueFactory<>("sessionId"));
+        this.memUsageColumn.setCellValueFactory(new PropertyValueFactory<>("memUsage"));
     }
 
     public void snapshot() {
-        snapshotList = reload(snapshotView);
-        taskStatuses = differenceService.compare(liveList, snapshotList);
+        this.snapshotList = reload(this.snapshotView);
+        this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList);
     }
 
     private List<Task> reload(TableView<Task> view) {
-        List<Task> tasks = taskLoader.load();
+        List<Task> tasks = this.taskLoader.load();
         view.setItems(FXCollections.observableArrayList(tasks));
         return tasks;
     }

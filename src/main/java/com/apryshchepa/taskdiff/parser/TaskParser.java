@@ -9,7 +9,7 @@ public class TaskParser {
     private final Pattern pattern = Pattern.compile("\"([^\"]*)\",\"([^\"]*)\",\"([^\"]*)\",\"([^\"]*)\",\"([^\"]*)\"");
 
     public Task parse(String line) {
-        Matcher matcher = pattern.matcher(line);
+        Matcher matcher = this.pattern.matcher(line);
         if (!matcher.find()) {
             throw new IllegalArgumentException("Not a valid format");
         }

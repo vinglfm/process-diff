@@ -32,7 +32,7 @@ public class WindowsTaskLoader implements TaskLoader {
              BufferedReader input = new BufferedReader(new InputStreamReader(inputStream))) {
             String task;
             while ((task = input.readLine()) != null) {
-                tasks.add(taskParser.parse(task));
+                tasks.add(this.taskParser.parse(task));
             }
         } catch (IOException exp) {
             System.err.println(exp.getMessage());

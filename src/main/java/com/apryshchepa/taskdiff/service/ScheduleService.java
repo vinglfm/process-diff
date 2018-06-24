@@ -8,7 +8,7 @@ public class ScheduleService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public void start(Runnable task, long period) {
-        scheduler.scheduleAtFixedRate(task, 0, period, TimeUnit.MILLISECONDS);
+        this.scheduler.scheduleAtFixedRate(task, 0, period, TimeUnit.MILLISECONDS);
     }
 
     public void stop() {
