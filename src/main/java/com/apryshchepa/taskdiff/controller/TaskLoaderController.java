@@ -47,7 +47,6 @@ public class TaskLoaderController {
     private final TaskLoadService taskLoadService;
 
     public TaskLoaderController() {
-        //TODO: whether check if this is Window or delegate creation
         this(new ScheduleService(), new TaskLoadService());
     }
 

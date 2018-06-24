@@ -1,8 +1,15 @@
 package com.apryshchepa.taskdiff.service;
 
-import java.util.concurrent.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ScheduleService {
+    private static final Logger LOG = LoggerFactory.getLogger(ScheduleService.class);
+
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
@@ -10,10 +17,7 @@ public class ScheduleService {
     });
 
     public void start(Runnable task, long period) {
+        LOG.info("Starting schedule service for {} period", period);
         this.scheduler.scheduleAtFixedRate(task, 0, period, TimeUnit.MILLISECONDS);
-    }
-
-    public void stop() {
-        scheduler.shutdownNow();
     }
 }

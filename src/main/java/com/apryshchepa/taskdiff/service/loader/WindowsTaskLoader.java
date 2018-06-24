@@ -2,6 +2,8 @@ package com.apryshchepa.taskdiff.service.loader;
 
 import com.apryshchepa.taskdiff.model.Task;
 import com.apryshchepa.taskdiff.parser.TaskParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class WindowsTaskLoader implements TaskLoader {
+    private static final Logger LOG = LoggerFactory.getLogger(WindowsTaskLoader.class);
 
     private static final String EXEC = "tasklist.exe /fo csv /nh";
 
@@ -35,9 +38,10 @@ public class WindowsTaskLoader implements TaskLoader {
                 tasks.add(this.taskParser.parse(task));
             }
         } catch (IOException exp) {
-            System.err.println(exp.getMessage());
+            LOG.error(exp.getMessage());
             tasks = Collections.emptyList();
         }
+        LOG.info("Loaded {} tasks", tasks.size());
         return tasks;
     }
 }
