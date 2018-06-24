@@ -1,24 +1,18 @@
 package com.apryshchepa.taskdiff.controller;
 
 import com.apryshchepa.taskdiff.model.Task;
-import com.apryshchepa.taskdiff.parser.TaskParser;
+import com.apryshchepa.taskdiff.service.ScheduleService;
+import com.apryshchepa.taskdiff.service.TaskLoader;
+import com.apryshchepa.taskdiff.service.WindowsTaskLoader;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TaskLoaderController {
-    private static final String EXEC = "tasklist.exe /fo csv /nh";
 
     @FXML
     private TableView<Task> liveView;
@@ -45,21 +39,25 @@ public class TaskLoaderController {
     @FXML
     private TableColumn<Task, String> snapMemUsageColumn;
 
-    private TaskParser taskParser;
+    private TaskLoader taskLoader;
+
+    private ScheduleService scheduleService;
 
     public TaskLoaderController() {
-        this(new TaskParser());
+        //TODO: whether check if this is Window or delegate creation
+        this(new ScheduleService(), new WindowsTaskLoader());
     }
 
-    private TaskLoaderController(TaskParser taskParser) {
-        this.taskParser = taskParser;
+    private TaskLoaderController(ScheduleService scheduleService, TaskLoader taskLoader) {
+        this.scheduleService = scheduleService;
+        this.taskLoader = taskLoader;
     }
 
     @FXML
     public void initialize() {
         initLiveTableColumns();
         initSnapshotTableColumns();
-        reload(liveView);
+        scheduleService.start(() -> reload(liveView), 1000);
     }
 
     private void initSnapshotTableColumns() {
@@ -83,22 +81,7 @@ public class TaskLoaderController {
     }
 
     private void reload(TableView<Task> view) {
-        List<Task> tasks = load();
+        List<Task> tasks = taskLoader.load();
         view.setItems(FXCollections.observableArrayList(tasks));
-    }
-
-    private List<Task> load() {
-        List<Task> tasks = new ArrayList<>();
-        try (InputStream inputStream = Runtime.getRuntime().exec(EXEC).getInputStream();
-             BufferedReader input = new BufferedReader(new InputStreamReader(inputStream))) {
-            String task;
-            while ((task = input.readLine()) != null) {
-                tasks.add(taskParser.parse(task));
-            }
-        } catch (IOException exp) {
-            System.err.println(exp.getMessage());
-            tasks = Collections.emptyList();
-        }
-        return tasks;
     }
 }
