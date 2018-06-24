@@ -15,7 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
 
-public class TaskLoaderController {
+public final class TaskLoaderController {
     private static final int PERIOD = 2000;
 
     @FXML
@@ -50,7 +50,7 @@ public class TaskLoaderController {
         this(new ScheduleService(), new TaskLoadService());
     }
 
-    private TaskLoaderController(ScheduleService scheduleService, TaskLoadService taskLoadService) {
+    private TaskLoaderController(final ScheduleService scheduleService, final TaskLoadService taskLoadService) {
         this.scheduleService = scheduleService;
         this.taskLoadService = taskLoadService;
     }

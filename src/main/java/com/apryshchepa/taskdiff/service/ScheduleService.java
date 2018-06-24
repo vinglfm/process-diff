@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class ScheduleService {
+public final class ScheduleService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduleService.class);
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -16,7 +16,7 @@ public class ScheduleService {
         return thread;
     });
 
-    public void start(Runnable task, long period) {
+    public void start(final Runnable task, long period) {
         LOG.info("Starting schedule service for {} period", period);
         this.scheduler.scheduleAtFixedRate(task, 0, period, TimeUnit.MILLISECONDS);
     }

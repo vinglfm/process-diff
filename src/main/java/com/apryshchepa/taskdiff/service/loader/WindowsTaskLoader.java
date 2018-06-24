@@ -13,18 +13,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class WindowsTaskLoader implements TaskLoader {
+public final class WindowsTaskLoader implements TaskLoader {
     private static final Logger LOG = LoggerFactory.getLogger(WindowsTaskLoader.class);
 
     private static final String EXEC = "tasklist.exe /fo csv /nh";
 
-    private TaskParser taskParser;
+    private final TaskParser taskParser;
 
     public WindowsTaskLoader() {
         this(new TaskParser());
     }
 
-    private WindowsTaskLoader(TaskParser taskParser) {
+    private WindowsTaskLoader(final TaskParser taskParser) {
         this.taskParser = taskParser;
     }
 

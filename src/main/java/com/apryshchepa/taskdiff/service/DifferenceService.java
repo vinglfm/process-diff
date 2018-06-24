@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-class DifferenceService {
+final class DifferenceService {
     private static final Logger LOG = LoggerFactory.getLogger(DifferenceService.class);
 
-    Map<Integer, Status> compare(List<Task> liveTasks, List<Task> snapshotTasks) {
+    Map<Integer, Status> compare(final List<Task> liveTasks, final List<Task> snapshotTasks) {
         LOG.info("Comparing snapshot and live tasks");
         Map<Integer, Task> snapshotMap = snapshotTasks.stream().collect(Collectors.toMap(Task::getPid, Function.identity()));
         return liveTasks.stream().map(liveTask -> {

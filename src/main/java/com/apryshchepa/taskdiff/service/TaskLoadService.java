@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class TaskLoadService {
+public final class TaskLoadService {
     private static final Logger LOG = LoggerFactory.getLogger(TaskLoadService.class);
 
     private final TaskLoader taskLoader;
@@ -24,7 +24,7 @@ public class TaskLoadService {
         this(new WindowsTaskLoader(), new DifferenceService());
     }
 
-    private TaskLoadService(TaskLoader taskLoader, DifferenceService differenceService) {
+    private TaskLoadService(final TaskLoader taskLoader, final DifferenceService differenceService) {
         this.taskLoader = taskLoader;
         this.differenceService = differenceService;
     }
