@@ -11,19 +11,19 @@ import java.util.stream.Collectors;
 public class DifferenceService {
 
     public Map<Integer, Status> compare(List<Task> liveTasks, List<Task> snapshotTasks) {
-        Map<Integer, Task> liveMap = liveTasks.stream().collect(Collectors.toMap(Task::getPid, Function.identity()));
+        Map<Integer, Task> snapshotMap = snapshotTasks.stream().collect(Collectors.toMap(Task::getPid, Function.identity()));
 
-        return snapshotTasks.stream().map(task -> {
-            Task liveTask = liveMap.get(task.getPid());
+        return liveTasks.stream().map(liveTask -> {
+            Task snapshotTask = snapshotMap.get(liveTask.getPid());
             Status status;
-            if (liveTask == null) {
+            if (snapshotTask == null) {
                 status = Status.NEW;
-            } else if (task.equals(liveTask)) {
+            } else if (liveTask.equals(snapshotTask)) {
                 status = Status.NOT_CHANGED;
             } else {
                 status = Status.CHANGED;
             }
-            return new SimpleEntry<>(task.getPid(), status);
+            return new SimpleEntry<>(liveTask.getPid(), status);
         }).collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
     }
 }

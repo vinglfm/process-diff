@@ -2,7 +2,6 @@ package com.apryshchepa.taskdiff.controller;
 
 import com.apryshchepa.taskdiff.model.Task;
 import com.apryshchepa.taskdiff.service.*;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.collections.FXCollections;
@@ -12,11 +11,14 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class TaskLoaderController {
 
-    private static final int PERIOD = 1000;
+    private static final int PERIOD = 2000;
+
     @FXML
     private TableView<Task> liveView;
     @FXML
@@ -69,12 +71,12 @@ public class TaskLoaderController {
     public void initialize() {
         initLiveTableColumns();
         initSnapshotTableColumns();
-        scheduleService.start(() -> {
-            this.liveList = reload(this.liveView);
-            Platform.runLater(() -> this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList));
-        }, PERIOD);
+        scheduleLiveView();
+        initRowFactory();
+    }
 
-        liveView.setRowFactory(tableView -> {
+    private void initRowFactory() {
+        this.liveView.setRowFactory(tableView -> {
             TableRow<Task> row = new TableRow<>();
             ObjectBinding<Status> contains = Bindings.createObjectBinding(() -> {
                 if (row.getItem() != null) {
@@ -85,13 +87,19 @@ public class TaskLoaderController {
             }, row.itemProperty());
             row.styleProperty().bind(Bindings.when(contains.isEqualTo(Status.CHANGED))
                     .then("-fx-background-color: grey;")
-                    .otherwise(Bindings.when(contains.isEqualTo(Status.DELETED))
-                            .then("-fx-background-color: red;")
-                            .otherwise(Bindings.when(contains.isEqualTo(Status.NEW))
-                                    .then("-fx-background-color: green;")
-                                    .otherwise(""))));
+                    .otherwise(Bindings.when(contains.isEqualTo(Status.NEW))
+                            .then("-fx-background-color: green;")
+                            .otherwise("")));
             return row;
         });
+    }
+
+    private void scheduleLiveView() {
+        this.scheduleService.start(() -> {
+            this.liveList = this.taskLoader.load();
+            this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList);
+            this.liveView.setItems(FXCollections.observableArrayList(this.liveList));
+        }, PERIOD);
     }
 
     private void initSnapshotTableColumns() {
@@ -111,13 +119,9 @@ public class TaskLoaderController {
     }
 
     public void snapshot() {
-        this.snapshotList = reload(this.snapshotView);
+        this.snapshotList = this.taskLoader.load();
         this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList);
-    }
-
-    private List<Task> reload(TableView<Task> view) {
-        List<Task> tasks = this.taskLoader.load();
-        view.setItems(FXCollections.observableArrayList(tasks));
-        return tasks;
+        this.snapshotView.setItems(FXCollections.observableArrayList(this.snapshotList));
+        this.liveView.refresh();
     }
 }
