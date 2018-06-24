@@ -1,15 +1,17 @@
 package com.apryshchepa.taskdiff.model;
 
+import java.util.Objects;
+
 public final class Task {
+    private Integer pid;
     private String imageName;
-    private String pid;
     private String sessionName;
     private String sessionId;
     private String memUsage;
 
-    public Task(String imageName, String pid, String sessionName, String sessionId, String memUsage) {
-        this.imageName = imageName;
+    public Task(Integer pid, String imageName, String sessionName, String sessionId, String memUsage) {
         this.pid = pid;
+        this.imageName = imageName;
         this.sessionName = sessionName;
         this.sessionId = sessionId;
         this.memUsage = memUsage;
@@ -23,11 +25,11 @@ public final class Task {
         this.imageName = imageName;
     }
 
-    public String getPid() {
+    public Integer getPid() {
         return pid;
     }
 
-    public void setPid(String pid) {
+    public void setPid(Integer pid) {
         this.pid = pid;
     }
 
@@ -53,5 +55,22 @@ public final class Task {
 
     public void setMemUsage(String memUsage) {
         this.memUsage = memUsage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(imageName, task.imageName) &&
+                Objects.equals(pid, task.pid) &&
+                Objects.equals(sessionName, task.sessionName) &&
+                Objects.equals(sessionId, task.sessionId) &&
+                Objects.equals(memUsage, task.memUsage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(imageName, pid, sessionName, sessionId, memUsage);
     }
 }

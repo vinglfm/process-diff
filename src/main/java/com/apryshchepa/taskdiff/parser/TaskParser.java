@@ -14,10 +14,10 @@ public class TaskParser {
             throw new IllegalArgumentException("Not a valid format");
         }
         String name = matcher.group(1);
-        String pid = matcher.group(2);
+        Integer pid = Integer.parseInt(matcher.group(2));
         String sessionName = matcher.group(3);
         String sessionId = matcher.group(4);
         String memUsage = matcher.group(5);
-        return new Task(name, pid, sessionName, sessionId, memUsage);
+        return new Task(pid, name, sessionName, sessionId, memUsage);
     }
 }

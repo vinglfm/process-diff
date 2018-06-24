@@ -1,19 +1,22 @@
 package com.apryshchepa.taskdiff.controller;
 
 import com.apryshchepa.taskdiff.model.Task;
-import com.apryshchepa.taskdiff.service.ScheduleService;
-import com.apryshchepa.taskdiff.service.TaskLoader;
-import com.apryshchepa.taskdiff.service.WindowsTaskLoader;
+import com.apryshchepa.taskdiff.service.*;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.List;
+import java.util.*;
 
 public class TaskLoaderController {
 
+    private static final int PERIOD = 1000;
     @FXML
     private TableView<Task> liveView;
     @FXML
@@ -39,25 +42,52 @@ public class TaskLoaderController {
     @FXML
     private TableColumn<Task, String> snapMemUsageColumn;
 
-    private TaskLoader taskLoader;
+    private final TaskLoader taskLoader;
 
-    private ScheduleService scheduleService;
+    private final DifferenceService differenceService;
+
+    private final ScheduleService scheduleService;
+
+    private List<Task> snapshotList = Collections.emptyList();
+
+    private List<Task> liveList = Collections.emptyList();
+
+    private Map<Integer, Status> taskStatuses = Collections.emptyMap();
 
     public TaskLoaderController() {
         //TODO: whether check if this is Window or delegate creation
-        this(new ScheduleService(), new WindowsTaskLoader());
+        this(new ScheduleService(), new WindowsTaskLoader(), new DifferenceService());
     }
 
-    private TaskLoaderController(ScheduleService scheduleService, TaskLoader taskLoader) {
+    private TaskLoaderController(ScheduleService scheduleService, TaskLoader taskLoader, DifferenceService differenceService) {
         this.scheduleService = scheduleService;
         this.taskLoader = taskLoader;
+        this.differenceService = differenceService;
     }
 
     @FXML
     public void initialize() {
         initLiveTableColumns();
         initSnapshotTableColumns();
-        scheduleService.start(() -> reload(liveView), 1000);
+        scheduleService.start(() -> {
+            liveList = reload(liveView);
+            Platform.runLater(() -> taskStatuses = differenceService.compare(liveList, snapshotList));
+        }, PERIOD);
+
+        liveView.setRowFactory(tableView -> {
+            TableRow<Task> row = new TableRow<>();
+            ObjectBinding<Status> contains = Bindings.createObjectBinding(() -> {
+                if (row.getItem() != null) {
+                    Integer pid = row.getItem().getPid();
+                    return this.taskStatuses.getOrDefault(pid, Status.NEW);
+                }
+                return Status.NEW;
+            }, row.itemProperty());
+            row.styleProperty().bind(Bindings.when(contains.isEqualTo(Status.CHANGED))
+                    .then("-fx-background-color: grey;")
+                    .otherwise(""));
+            return row;
+        });
     }
 
     private void initSnapshotTableColumns() {
@@ -77,11 +107,13 @@ public class TaskLoaderController {
     }
 
     public void snapshot() {
-        reload(snapshotView);
+        snapshotList = reload(snapshotView);
+        taskStatuses = differenceService.compare(liveList, snapshotList);
     }
 
-    private void reload(TableView<Task> view) {
+    private List<Task> reload(TableView<Task> view) {
         List<Task> tasks = taskLoader.load();
         view.setItems(FXCollections.observableArrayList(tasks));
+        return tasks;
     }
 }
