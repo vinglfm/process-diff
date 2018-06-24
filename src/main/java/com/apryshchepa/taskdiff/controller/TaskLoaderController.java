@@ -1,7 +1,9 @@
 package com.apryshchepa.taskdiff.controller;
 
 import com.apryshchepa.taskdiff.model.Task;
-import com.apryshchepa.taskdiff.service.*;
+import com.apryshchepa.taskdiff.service.ScheduleService;
+import com.apryshchepa.taskdiff.service.Status;
+import com.apryshchepa.taskdiff.service.TaskLoadService;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.collections.FXCollections;
@@ -11,12 +13,9 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class TaskLoaderController {
-
     private static final int PERIOD = 2000;
 
     @FXML
@@ -44,27 +43,17 @@ public class TaskLoaderController {
     @FXML
     private TableColumn<Task, String> snapMemUsageColumn;
 
-    private final TaskLoader taskLoader;
-
-    private final DifferenceService differenceService;
-
     private final ScheduleService scheduleService;
-
-    private List<Task> snapshotList = Collections.emptyList();
-
-    private List<Task> liveList = Collections.emptyList();
-
-    private Map<Integer, Status> taskStatuses = Collections.emptyMap();
+    private final TaskLoadService taskLoadService;
 
     public TaskLoaderController() {
         //TODO: whether check if this is Window or delegate creation
-        this(new ScheduleService(), new WindowsTaskLoader(), new DifferenceService());
+        this(new ScheduleService(), new TaskLoadService());
     }
 
-    private TaskLoaderController(ScheduleService scheduleService, TaskLoader taskLoader, DifferenceService differenceService) {
+    private TaskLoaderController(ScheduleService scheduleService, TaskLoadService taskLoadService) {
         this.scheduleService = scheduleService;
-        this.taskLoader = taskLoader;
-        this.differenceService = differenceService;
+        this.taskLoadService = taskLoadService;
     }
 
     @FXML
@@ -81,7 +70,7 @@ public class TaskLoaderController {
             ObjectBinding<Status> contains = Bindings.createObjectBinding(() -> {
                 if (row.getItem() != null) {
                     Integer pid = row.getItem().getPid();
-                    return this.taskStatuses.getOrDefault(pid, Status.NEW);
+                    return this.taskLoadService.statuses().getOrDefault(pid, Status.NEW);
                 }
                 return Status.NEW;
             }, row.itemProperty());
@@ -96,9 +85,8 @@ public class TaskLoaderController {
 
     private void scheduleLiveView() {
         this.scheduleService.start(() -> {
-            this.liveList = this.taskLoader.load();
-            this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList);
-            this.liveView.setItems(FXCollections.observableArrayList(this.liveList));
+            List<Task> tasks = this.taskLoadService.load();
+            this.liveView.setItems(FXCollections.observableArrayList(tasks));
         }, PERIOD);
     }
 
@@ -119,9 +107,8 @@ public class TaskLoaderController {
     }
 
     public void snapshot() {
-        this.snapshotList = this.taskLoader.load();
-        this.taskStatuses = this.differenceService.compare(this.liveList, this.snapshotList);
-        this.snapshotView.setItems(FXCollections.observableArrayList(this.snapshotList));
+        List<Task> snapshot = this.taskLoadService.snapshot();
+        this.snapshotView.setItems(FXCollections.observableArrayList(snapshot));
         this.liveView.refresh();
     }
 }

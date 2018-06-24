@@ -1,4 +1,4 @@
-package com.apryshchepa.taskdiff.service;
+package com.apryshchepa.taskdiff.service.loader;
 
 import com.apryshchepa.taskdiff.model.Task;
 

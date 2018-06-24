@@ -1,4 +1,4 @@
-package com.apryshchepa.taskdiff.service;
+package com.apryshchepa.taskdiff.service.loader;
 
 import com.apryshchepa.taskdiff.model.Task;
 import com.apryshchepa.taskdiff.parser.TaskParser;
@@ -21,7 +21,7 @@ public class WindowsTaskLoader implements TaskLoader {
         this(new TaskParser());
     }
 
-    public WindowsTaskLoader(TaskParser taskParser) {
+    private WindowsTaskLoader(TaskParser taskParser) {
         this.taskParser = taskParser;
     }
 
